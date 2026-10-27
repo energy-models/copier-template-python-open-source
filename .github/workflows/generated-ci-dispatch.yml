@@ -1,0 +1,32 @@
+# SPDX-FileCopyrightText: 2026 copier-template-python-open-source contributors
+#
+# SPDX-License-Identifier: MIT
+
+# Placeholder that only exists so that `ci-copier.yml` can dispatch this file
+# name.
+#
+# GitHub refuses to dispatch a workflow whose file is absent from the default
+# branch, but it then runs the file *as found on the dispatched ref*. The
+# "Test CI of generated package" job writes its own version of this file into
+# the generated package before pushing it to a `ci/*` branch, so dispatching
+# that branch runs the generated package's `ci.yml` and `build.yml`. This is
+# necessary because a push authenticated with `GITHUB_TOKEN` never starts a
+# workflow run, whereas `workflow_dispatch` is the documented exception.
+#
+# On the default branch the file is deliberately a no-op.
+
+name: Generated CI dispatch
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  noop:
+    name: Nothing to do
+    timeout-minutes: 5
+    runs-on: ubuntu-latest
+    steps:
+      - name: Explain
+        run: echo "This workflow is only meaningful on a 'ci/*' branch."

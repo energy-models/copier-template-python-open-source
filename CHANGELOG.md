@@ -41,7 +41,7 @@ In this release, we have aligned to current practice in https://github.com/energ
 ### Changed
 
 - Accelerate REUSE check in pre-commit.
-- template tests to include only a conftest.py file.
+- template tests to include only a conftest.py file and an import smoke test, so that a new project's test suite passes.
 - AGENTS.md, to include more verbose instructions.
 - **Breaking**: the package version comes from the git tag through hatch-vcs, not from a `sed` over `pyproject.toml`.
 - **Breaking**: `CHANGELOG.md` uses one `## Upcoming version` heading above `## X.Y.Z (YYYY-MM-DD)` release headings.

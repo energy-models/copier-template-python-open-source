@@ -13,6 +13,8 @@ def test_generation(generated_project, project_slug):
     assert (
         generated_project / "src" / project_slug.replace("-", "_") / "__init__.py"
     ).exists()
+    smoke_test = (generated_project / "tests" / "test_import.py").read_text()
+    assert f"import {project_slug.replace('-', '_')}\n" in smoke_test
     readme = (generated_project / "README.md").read_text()
     assert (
         f"https://img.shields.io/github/actions/workflow/status/energy-models/{project_slug}/ci.yml"

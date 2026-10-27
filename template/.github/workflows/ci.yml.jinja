@@ -35,8 +35,17 @@ jobs:
     steps:
       - name: Check out branch
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          # The changelog check compares the release heading with the tags.
+          fetch-depth: 0
+          persist-credentials: false
       - name: Set up pixi
         uses: prefix-dev/setup-pixi@a09b6247153796b190642a2b53fac4241043cf6f # v0.10.0
+      # A pull request that puts a version heading on top of CHANGELOG.md
+      # releases it on merge, so the heading is checked here, before the merge
+      # can act on it. See RELEASING.md.
+      - name: Check the changelog headings
+        run: python3 -m tools.changelog check
       - name: Run linting
         run: pixi run lint
         env:

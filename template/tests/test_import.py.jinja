@@ -1,0 +1,19 @@
+{#-
+SPDX-FileCopyrightText: 2026 copier-template-python-open-source contributors
+
+SPDX-License-Identifier: MIT
+-#}
+{#- REUSE-IgnoreStart -#}
+# SPDX-FileCopyrightText: {{ project_slug }} contributors
+#
+# SPDX-License-Identifier: {{ license }}
+{#- REUSE-IgnoreEnd #}
+
+import {{ project_slug_snake_case }}
+
+
+def test_package_imports_with_a_version():
+    """Placeholder test to ensure template CI checks can be conducted thoroughly"""
+    assert {{ project_slug_snake_case }}.__version__ != "unknown", (
+        "the package is installed and reads its version from its metadata"
+    )

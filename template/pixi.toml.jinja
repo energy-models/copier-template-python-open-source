@@ -20,12 +20,16 @@ preview = ["pixi-build"]
 
 [package]
 name = "{{ project_slug }}"
+# pyproject.toml takes its version from the git tag, but pixi needs a literal
+# to name the local development install. Nothing ships from this.
+version = "0.0.0"
 [package.build.backend]
 name = "pixi-build-python"
 version = "*"
 [package.host-dependencies]
 python = ">={{ minimal_python_version.replace('py3', '3.') }}"
 hatchling = "*"
+hatch-vcs = "*"
 uv = "*"
 
 [dependencies]
@@ -42,6 +46,7 @@ test-coverage = "pytest --cov={{ project_slug_snake_case }} --cov-report=xml --c
 [feature.build.dependencies]
 python = "*"
 hatchling = "*"
+hatch-vcs = "*"
 python-build = "*"
 twine = ">=6"
 [feature.build.tasks]

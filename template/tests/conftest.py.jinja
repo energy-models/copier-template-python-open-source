@@ -9,12 +9,4 @@ SPDX-License-Identifier: MIT
 # SPDX-License-Identifier: {{ license }}
 {#- REUSE-IgnoreEnd #}
 
-import pytest
-
-
-# This is a fixture that comes with the template; feel free to delete it.
-@pytest.fixture
-def base(tmp_path, monkeypatch):
-    """Point layer_dir at a temporary directory for the whole test."""
-    monkeypatch.setattr(duck, "DEFAULT_BASE_URI", str(tmp_path))
-    return str(tmp_path)
+"""Fixtures shared by the whole test suite."""

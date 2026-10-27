@@ -22,7 +22,9 @@ Some of the resources to look at if you're interested in contributing:
 ## Licensing
 
 Copyright (c) {{ '%Y' | strftime }} {{ project_slug }} contributors.
-By contributing to {{ project_slug }}, i.e. through opening a pull request, you represent that your contributions are your own original work and that you have the right to license them, and you agree that your contributions are licensed under the {{ open_source_license }}.
+By contributing to {{ project_slug }}, i.e. through opening a pull request, you represent that your contributions are your own original work
+and that you have the right to license them,
+and you agree that your contributions are licensed under the {{ open_source_license }}.
 
 ## Reporting bugs and requesting features
 
@@ -60,7 +62,8 @@ When you contribute for the first time, ensure your reviewer [adds you as a cont
 
 Before submitting a pull request, check whether you have:
 
-- Added your changes to `CHANGELOG.md`.
+- Written the PR title as a conventional commit subject (see below).
+- Added its line under `## Upcoming version` in `CHANGELOG.md` by hand, if the PR is a `feat`, `fix`, `perf`, `refactor`, `docs` or `revert` (see below).
 - Added or updated documentation for your changes.
 - Added tests if you implemented new functionality.
 
@@ -68,15 +71,24 @@ When opening a pull request, please provide a clear summary of your changes!
 
 ### Commit messages
 
-Please try to write clear commit messages.
-One-line messages are fine for small changes, but bigger changes should look like this:
+Merges are squashed, so the **PR title** becomes the commit on `main`.
+Write it so it also works as the line you add to `CHANGELOG.md` by hand.
+It must be a [conventional commit](https://www.conventionalcommits.org) subject:
 
 ```text
-A brief summary of the commit (max 50 characters)
+<type>[(scope)]: <subject>
 
-A paragraph or bullet-point list describing what changed and its impact,
-covering as many lines as needed.
+feat: a reader for compressed input files
+fix(io): a path with a trailing slash loads
+docs: describe the configuration options
 ```
+
+A `feat`, `fix`, `perf`, `refactor`, `docs` or `revert` PR adds its title, with a link to the PR, under `## Upcoming version` in `CHANGELOG.md`.
+A `chore`, `test`, `ci`, `build` or `style` PR adds no line.
+The `Conventional commit subject` check enforces the format on every pull request, and the `Changelog line` check enforces the line.
+The label `no changelog` opts a PR out of the second.
+
+Beyond the subject line, write whatever body the change deserves: a paragraph or bullet list covering what changed and its impact.
 
 ### Code conventions
 
@@ -87,31 +99,23 @@ We mostly follow the official [Style Guide for Python Code (PEP8)](https://www.p
 We have chosen to use the uncompromising code formatter and linter [`ruff`](https://beta.ruff.rs/docs/).
 When run from the root directory of this repo, `pyproject.toml` should ensure that formatting and linting fixes are in line with our custom preferences (e.g., maximum line length).
 To make this a smooth experience, you should run `pixi run pre-commit install` after setting up your development environment.
-If you prefer, you can also set up your IDE to run these two tools whenever you save your files, and to have `ruff` highlight erroneous code directly as you type.
+If you prefer, you can also set up your IDE to run these two tools whenever you save your files,
+and to have `ruff` highlight erroneous code directly as you type.
 Take a look at their documentation for more information on configuring this.
 
 We require all new contributions to have docstrings for all modules, classes and methods.
 When adding docstrings, we request you use the [Google docstring style](https://google.github.io/styleguide/pyguide.html#38-comments-and-docstrings).
 
-## Release checklist
+## Releases
 
-### Pre-release
+A release is a PR that renames `## Upcoming version` in `CHANGELOG.md` to the version and the day,
+such as `## 0.1.0 (2026-10-01)`,
+and edits the section into the release notes.
+Merging it tags the release, opens the GitHub release and publishes the package to PyPI.
 
-- Make sure all unit and integration tests pass (This is best done by creating a pre-release pull request).
-- Make sure documentation builds without errors (`pixi run docs-build`).
-- Make sure the [changelog][changelog] is up-to-date, especially that new features and backward incompatible changes are clearly marked.
+The version is never written down in the source tree.
+It comes from the git tag at build time, and `{{ project_slug_snake_case }}.__version__` reads it back from the installed package metadata.
 
-### Create release
-
-- Bump the version number in `src/{{ project_slug_snake_case }}/__init__.py`
-- Update the [changelog][changelog] with final version number of the form `vX.Y.Z` + release date.
-- Commit with message `Release vX.Y.Z`, then add a `vX.Y.Z` tag.
-- Create a release pull request to verify that all CI and CD checks pass.
-- Once the PR is approved and merged, create a release through the GitHub web interface, using the same tag, titling it `Release vX.Y.Z` and include all the changelog elements that are *not- flagged as **internal**.
-
-### Post-release
-
-- Update the changelog, adding a new `[Unreleased]` heading.
-- Update `src/{{ project_slug_snake_case }}/__init__.py` to the next version appended with `.dev0`, in preparation for the next main commit.
+See [RELEASING.md]({{ github_url }}/blob/main/RELEASING.md) for the steps, what to do when one fails, and the one-time repository setup.
 
 <!--- --8<-- [end:docs] -->

@@ -16,7 +16,6 @@ project_slug:
   validator: >-
     {% if '_' in project_slug or ' ' in project_slug or '.' in project_slug %} The project slug should not contain underscores, spaces or dots. {% endif %}
 
-
 project_slug_snake_case:
   type: str
   default: "{{ project_slug.replace('-', '_') }}"
@@ -40,14 +39,12 @@ author_email:
   validator: >-
     {% if not (author_email | regex_search('^.*@.*$')) %} Invalid email {% endif %}
 
-
 repository_owner:
   type: str
   help: What is the GitHub organisation / user of this project, under which the repository will be hosted?
   default: "energy-models"
   validator: >-
     {% if not (repository_owner | regex_search('^[^\\s]+$')) %} Repository owner cannot contain spaces {% endif %}
-
 
 github_url:
   type: str
@@ -90,6 +87,13 @@ add_autobump_workflow:
   type: bool
   help: Do you want to add a GitHub Workflow to automatically bump `pixi.lock`?
   default: true
+
+_migrations:
+  - version: v1.1.0
+    when: "{{ _stage == 'before' }}"
+    command:
+      - "{{ _copier_python }}"
+      - "{{ _copier_conf.src_path }}/migrations/v1_1_0.py"
 
 _tasks:
   - "pixi exec --spec git git init"

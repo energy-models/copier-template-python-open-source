@@ -20,7 +20,8 @@ Release headings should be of the form:
 
 All notable changes to this project will be documented in this file.
 
-The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
+and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## Unreleased
 
@@ -33,12 +34,19 @@ In this release, we have aligned to current practice in https://github.com/energ
 - mkdocs theme palette, language, & icon.
 - extra socials buttons for GH & pypi.
 - Mkdocs v2 warning suppressor in pixi.toml.
+- Release on merge, ported from https://github.com/energy-models/mathspec:
+  a PR that puts a version heading on top of `CHANGELOG.md` tags, releases and publishes that version (`release.yml`, `tools/changelog.py`, `RELEASING.md`).
+- `Changelog line` and `Conventional commit subject` PR checks.
 
 ### Changed
 
 - Accelerate REUSE check in pre-commit.
 - template tests to include only a conftest.py file.
 - AGENTS.md, to include more verbose instructions.
+- **Breaking**: the package version comes from the git tag through hatch-vcs, not from a `sed` over `pyproject.toml`.
+- **Breaking**: `CHANGELOG.md` uses one `## Upcoming version` heading above `## X.Y.Z (YYYY-MM-DD)` release headings.
+  CI refuses any other heading.
+- `build.yml` no longer publishes on a tag push; `release.yml` calls it.
 
 ## v1.0.0 (2026.08.17)
 

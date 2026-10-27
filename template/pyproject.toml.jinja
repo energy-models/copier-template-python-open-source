@@ -12,8 +12,12 @@ SPDX-License-Identifier: MIT
 {#- REUSE-IgnoreEnd #}
 
 [build-system]
-requires = ["hatchling"]
+requires = ["hatchling", "hatch-vcs"]
 build-backend = "hatchling.build"
+
+[tool.hatch.version]
+source = "vcs"
+fallback-version = "0.0.0"
 
 [tool.hatch.build.targets.sdist]
 only-include = ["src", "LICENSES", "README.md"]
@@ -22,8 +26,8 @@ only-include = ["src", "LICENSES", "README.md"]
 name = "{{ project_slug }}"
 description = "{{ project_short_description }}"
 authors = [{ name = "{{ author_name }}", email = "{{ author_email }}" }]
-# replaced in CI
-version = "0.0.0"
+# The git tag is the version, see RELEASING.md.
+dynamic = ["version"]
 classifiers = [
   "Programming Language :: Python :: 3",
 {%- if minimal_python_version <= "py312" %}

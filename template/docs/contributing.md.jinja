@@ -55,14 +55,16 @@ If you plan to make changes to the code then please make regular use of the foll
 ## Documentation
 
 With any contribution, you may need to update / add to the documentation (in the `docs` directory).
-We use [MkDocs](https://www.mkdocs.org/) and the [Material](https://squidfunk.github.io/mkdocs-material/) theme to build and render our documentation, meaning you can write your documentation in Markdown files.
+We use [MkDocs](https://www.mkdocs.org/) and the [Material](https://squidfunk.github.io/mkdocs-material/) theme to build and render our documentation,
+meaning you can write your documentation in Markdown files.
 
 Here are some use-cases that you may come across in which you are considering updating the documentation:
 
 ??? question "I have updated the README.md"
 
     We pipe sections of the README over to the documentation automatically.
-    If you put your changes between the commented lines `:::md <!--- --8<-- [start:docs] -->` and `:::md <!--- --8<-- [end:docs] -->` it will find its way to the documentation homepage.
+    If you put your changes between the commented lines `:::md <!--- --8<-- [start:docs] -->` and `:::md <!--- --8<-- [end:docs] -->`
+    it will find its way to the documentation homepage.
 
 ??? question annotate "I want to add a new page"
 
@@ -129,7 +131,8 @@ Here are some use-cases that you may come across in which you are considering up
 
     You can serve your documentation locally by calling `pixi run docs-serve` from the command line.
     Once the documentation has been built you will see a link to navigate to in your browser, most likely <http://127.0.0.1:8000>.
-    When you make changes to your documentation, `mkdocs` will automatically rebuild everything so that you can check the effects of your changes without needing to rerun manually.
+    When you make changes to your documentation, `mkdocs` will automatically rebuild everything
+    so that you can check the effects of your changes without needing to rerun manually.
 
 ??? question "I want to do something else"
 

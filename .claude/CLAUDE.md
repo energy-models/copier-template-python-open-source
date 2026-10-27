@@ -1,0 +1,7 @@
+<!--
+SPDX-FileCopyrightText: 2026 copier-template-python-open-source contributors
+
+SPDX-License-Identifier: MIT
+-->
+
+@../AGENTS.md

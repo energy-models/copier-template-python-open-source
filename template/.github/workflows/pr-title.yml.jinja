@@ -1,0 +1,95 @@
+{#-
+SPDX-FileCopyrightText: 2026 copier-template-python-open-source contributors
+
+SPDX-License-Identifier: MIT
+-#}
+{#- REUSE-IgnoreStart -#}
+# SPDX-FileCopyrightText: {{ project_slug }} contributors
+#
+# SPDX-License-Identifier: {{ license }}
+{#- REUSE-IgnoreEnd #}
+
+{% raw -%}
+name: PR title
+
+# The squash subject becomes a commit on main. The PR adds its title to
+# CHANGELOG.md by hand, and its type decides whether it owes that line. Nothing
+# writes the changelog on merge. See RELEASING.md.
+#
+# Both the PR title and, when a PR has exactly one commit, that commit's own
+# title are validated: GitHub's default `squash_merge_commit_title` is
+# COMMIT_OR_PR_TITLE, so which of the two lands on main depends on the commit
+# count. Checking both means whichever GitHub picks has been checked.
+
+on:
+  pull_request:
+    # `synchronize` is here because this check is meant to be required, and a
+    # required check is evaluated against the head commit. Without it a new
+    # head has no result, and GitHub waits for one that never arrives.
+    types: [opened, edited, reopened, synchronize]
+
+permissions:
+  contents: read
+  pull-requests: read
+
+jobs:
+  conventional:
+    name: Conventional commit subject
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - name: Validate the subject that will land on main
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          NUMBER: ${{ github.event.pull_request.number }}
+          PR_TITLE: ${{ github.event.pull_request.title }}
+          COMMIT_COUNT: ${{ github.event.pull_request.commits }}
+        run: |
+          set -euo pipefail
+
+          # keep in sync with the type table in AGENTS.md and CONTRIBUTING.md
+          TYPES='feat|fix|perf|refactor|docs|chore|test|ci|build|style|revert'
+          # type, optional (scope), optional ! for breaking, ": ", then a subject
+          PATTERN="^(${TYPES})(\([a-z0-9._/-]+\))?!?: .+"
+
+          fail=0
+
+          check() {
+            local what="$1" subject="$2"
+            if [[ ! "$subject" =~ $PATTERN ]]; then
+              echo "::error::${what} is not a conventional commit subject: ${subject}"
+              fail=1
+              return
+            fi
+            if (( ${#subject} > 72 )); then
+              echo "::warning::${what} is ${#subject} chars; git and the GitHub UI truncate around 72."
+            fi
+            echo "ok: ${what} — ${subject}"
+          }
+
+          titles=("PR title|${PR_TITLE}")
+          if [[ "$COMMIT_COUNT" == "1" ]]; then
+            only=$(gh api "repos/${REPO}/pulls/${NUMBER}/commits" --jq '.[0].commit.message')
+            titles+=("the single commit's title|$(head -1 <<<"$only")")
+          fi
+
+          for entry in "${titles[@]}"; do
+            check "${entry%%|*}" "${entry#*|}"
+          done
+
+          if (( fail )); then
+            cat <<'MSG'
+
+          Expected: <type>[(scope)][!]: <subject>
+
+            types    feat, fix, perf, refactor, docs, chore, test, ci, build, style, revert
+            examples feat: a reader for compressed input files
+                     fix(io): a path with a trailing slash loads
+                     docs: describe the configuration options
+
+          Fix the PR title — no need to rewrite the branch. Edits re-run this check.
+          MSG
+            exit 1
+          fi
+{%- endraw %}

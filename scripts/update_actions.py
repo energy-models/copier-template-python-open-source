@@ -17,7 +17,7 @@ def update_workflow_actions(file_path: Path):
     new_lines: list[str] = []
 
     for line in lines:
-        if "uses: " not in line:
+        if "uses: " not in line or "uses: ./" in line:
             new_lines.append(line)
         else:
             action_with_rest = line.split(":")[1].strip()

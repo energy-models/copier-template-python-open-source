@@ -15,41 +15,44 @@ import scripts.common
 from .utils import git_user
 
 
+def copy_template(
+    target: Path, extra_data: dict | None = None, skip_tasks: bool = True
+) -> Path:
+    data = {
+        "project_slug": "project",
+        "project_short_description": "A test project",
+        "github_user": "LandoCalrissian",
+        "author_name": "Lando Calrissian",
+        "author_email": "lando@calrissian.org",
+    }
+    data.update(extra_data or {})
+
+    directory = Path(__file__).parent
+    with git_user():
+        copier_data = chain.from_iterable(
+            [("--data", f"{key}={value}") for key, value in data.items()]
+        )
+        subprocess.check_call(
+            [
+                "copier",
+                "copy",
+                "--defaults",
+                "--vcs-ref=HEAD",
+                "--trust",
+                "--skip-tasks" if skip_tasks else "",
+                *copier_data,
+                directory.parent,
+                target,
+            ]
+        )
+
+    return target
+
+
 @pytest.fixture
 def generate_project(tmp_path):
     def _generate(extra_data=None, skip_tasks: bool = True):
-        if extra_data is None:
-            extra_data = {}
-
-        data = {
-            "project_slug": "project",
-            "project_short_description": "A test project",
-            "github_user": "LandoCalrissian",
-            "author_name": "Lando Calrissian",
-            "author_email": "lando@calrissian.org",
-        }
-        data.update(extra_data)
-
-        directory = Path(__file__).parent
-        with git_user():
-            copier_data = chain.from_iterable(
-                [("--data", f"{key}={value}") for key, value in data.items()]
-            )
-            subprocess.check_call(
-                [
-                    "copier",
-                    "copy",
-                    "--defaults",
-                    "--vcs-ref=HEAD",
-                    "--trust",
-                    "--skip-tasks" if skip_tasks else "",
-                    *copier_data,
-                    directory.parent,
-                    tmp_path,
-                ]
-            )
-
-        return tmp_path
+        return copy_template(tmp_path, extra_data, skip_tasks)
 
     return _generate
 

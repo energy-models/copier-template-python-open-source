@@ -10,10 +10,18 @@ on:
   schedule:
     - cron: 0 6 * * *
 
+permissions:
+  contents: read
+
 jobs:
   update:
     name: Update ${{ matrix.name }}
     runs-on: ubuntu-latest
+    permissions:
+      # `create-pull-request` pushes and opens the pull request with `CI_PAT`.
+      contents: read
+      # Open an issue when the update fails.
+      issues: write
     strategy:
       matrix:
         include:
@@ -22,6 +30,8 @@ jobs:
     steps:
       - name: Check out branch
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
       - name: Set up pixi
         uses: prefix-dev/setup-pixi@a09b6247153796b190642a2b53fac4241043cf6f # v0.10.0
         with:
@@ -32,31 +42,37 @@ jobs:
           GH_TOKEN: ${{ github.token }}
       - uses: peter-evans/create-pull-request@5f6978faf089d4d20b00c7766989d076bb2fc7f1 # v8.1.1
         with:
-          commit-message: Auto-update ${{ matrix.name }}
-          title: Auto-update ${{ matrix.name }}
+          commit-message: "build: auto-update ${{ matrix.name }}"
+          title: "build: auto-update ${{ matrix.name }}"
           body: |
             New versions of pinned dependencies in ${{ matrix.name }} were detected.
             This PR updates them to the latest version.
           branch: update-${{ matrix.name }}
           delete-branch: true
+          # A pull request opened with `GITHUB_TOKEN` starts no workflow, so it
+          # would get no checks. `CI_PAT` is a fine-grained token limited to
+          # this repository.
+          token: ${{ secrets.CI_PAT }}
       - name: Create issue on failure
         if: failure()
         uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        env:
+          NAME: ${{ matrix.name }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
         with:
           script: |
-            github.rest.issues.listForRepo({
+            const { data: open } = await github.rest.issues.listForRepo({
               owner: context.repo.owner,
               repo: context.repo.repo,
               state: "open",
-              labels: "[bot] autoupdate"
-            }).then((issues) => {
-              if (issues.data.length === 0) {
-                github.rest.issues.create({
-                  owner: context.repo.owner,
-                  repo: context.repo.repo,
-                  title: "${{ matrix.name }} update failed",
-                  body: "See https://github.com/quantco/copier-template-python-open-source/actions/runs/${{ github.run_id }} for details.",
-                  labels: ["[bot] autoupdate"]
-                })
-              }
+              labels: "[bot] autoupdate",
             });
+            if (open.length === 0) {
+              await github.rest.issues.create({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                title: `${process.env.NAME} update failed`,
+                body: `See ${process.env.RUN_URL} for details.`,
+                labels: ["[bot] autoupdate"],
+              });
+            }

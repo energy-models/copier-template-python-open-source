@@ -25,6 +25,8 @@ jobs:
     steps:
       - name: Check out branch
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
       - name: Set up pixi
         uses: prefix-dev/setup-pixi@a09b6247153796b190642a2b53fac4241043cf6f # v0.10.0
       - name: Run linting
@@ -38,6 +40,8 @@ jobs:
     steps:
       - name: Check out branch
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
       - name: Set up pixi
         uses: prefix-dev/setup-pixi@a09b6247153796b190642a2b53fac4241043cf6f # v0.10.0
       - name: Test
@@ -51,9 +55,9 @@ jobs:
     timeout-minutes: 30
     runs-on: ubuntu-latest
     permissions:
-      # Push the generated package to a throwaway `ci/*` branch and delete it again.
-      contents: write
-      # Dispatch the generated package's CI and cancel leftover runs.
+      contents: read
+      # Read and cancel the generated package's runs. Pushing goes through
+      # `CI_PAT`, not this token.
       actions: write
     strategy:
       matrix:
@@ -63,6 +67,7 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0
+          persist-credentials: false
       - name: Set up pixi
         uses: prefix-dev/setup-pixi@a09b6247153796b190642a2b53fac4241043cf6f # v0.10.0
         with:
@@ -73,16 +78,20 @@ jobs:
           echo "name=ci/$GITHUB_SHA-${{ matrix.minimal-python-version }}" >> $GITHUB_OUTPUT
       - name: Test generated package CI
         env:
-          # Authentication for pushing to, and driving the CI of, $GITHUB_REPOSITORY.
+          # Reading and cancelling the generated package's runs.
           GH_TOKEN: ${{ github.token }}
+          # A fine-grained token limited to this repository. `GITHUB_TOKEN`
+          # can neither push files under `.github/workflows/` nor start a
+          # workflow by pushing; a push made with `CI_PAT` does both.
+          CI_PAT: ${{ secrets.CI_PAT }}
           BRANCH: ${{ steps.branch.outputs.name }}
           MINIMAL_PYTHON_VERSION: ${{ matrix.minimal-python-version }}
         run: |
+          : "${CI_PAT:?the CI_PAT secret is not set}"
           AUTH="authorization: Bearer $GH_TOKEN"
           # Set up local Git so that copier can run "git commit".
           git config --global user.email "landocalrissian@example.com"
           git config --global user.name "Lando Calrissian"
-          # Generate package with default settings + Windows CI.
           copier copy \
             --data project_slug="package" \
             --data project_short_description="Example Package" \
@@ -95,45 +104,16 @@ jobs:
             --vcs-ref HEAD \
             . out
           cd out
-          # A push authenticated with GITHUB_TOKEN never starts a workflow run,
-          # so the generated workflows cannot be triggered by pushing them.
-          # `workflow_dispatch` is the documented exception, hence: turn the
-          # generated workflows into reusable ones and call them from a shim
-          # that we dispatch explicitly below.
-          yq eval '.on = {"workflow_call": {}}' -i .github/workflows/ci.yml
-          yq eval '.on = {"workflow_call": {}}' -i .github/workflows/build.yml
-          # The shim's file name has to exist on the default branch for GitHub
-          # to accept a dispatch, but the contents that run are the ones on the
-          # dispatched ref - i.e. this file, not the no-op placeholder.
-          cat > .github/workflows/generated-ci-dispatch.yml <<'EOF'
-          # SPDX-FileCopyrightText: package contributors
-          #
-          # SPDX-License-Identifier: MIT
-
-          name: Generated CI dispatch
-          on:
-            workflow_dispatch:
-
-          jobs:
-            ci:
-              uses: ./.github/workflows/ci.yml
-            build:
-              uses: ./.github/workflows/build.yml
-          EOF
+          # The generated CI and build run on pull requests and on `main`;
+          # here they have to run on a push to the `ci/*` branch.
+          yq eval '.on = ["push"]' -i .github/workflows/ci.yml
+          yq eval '.on = ["push"]' -i .github/workflows/build.yml
           git add .
           git commit -m "Initial commit"
-          # Push the generated package's HEAD commit to a `ci/*` branch.
-          # $GH_TOKEN is masked in the logs.
           cid=$(git rev-parse HEAD)
-          git push -f "https://x-access-token:$GH_TOKEN@${GITHUB_SERVER_URL#https://}/$GITHUB_REPOSITORY" "$cid:refs/heads/$BRANCH"
-          # Start the generated package's CI.
-          curl -fsSL --request POST --header "$AUTH" \
-            --header "content-type: application/json" \
-            --data "{\"ref\": \"$BRANCH\"}" \
-            "$GITHUB_API_URL/repos/$GITHUB_REPOSITORY/actions/workflows/generated-ci-dispatch.yml/dispatches"
-          # Use the GitHub API to wait for the generated package's CI to complete (success or failure).
-          # We look for a GitHub Actions run for the HEAD commit ID.
-          WORKFLOW_URL="$GITHUB_API_URL/repos/$GITHUB_REPOSITORY/actions/runs?branch=$BRANCH&head_sha=$cid&event=workflow_dispatch"
+          git push -f "https://x-access-token:$CI_PAT@${GITHUB_SERVER_URL#https://}/$GITHUB_REPOSITORY.git" "$cid:refs/heads/$BRANCH"
+          # Wait for the generated package's CI to complete (success or failure).
+          WORKFLOW_URL="$GITHUB_API_URL/repos/$GITHUB_REPOSITORY/actions/runs?branch=$BRANCH&head_sha=$cid&event=push"
           echo "Waiting for inner CI to start"
           while (( $(curl -Ls --header "$AUTH" "$WORKFLOW_URL" | jq -r ".workflow_runs | length") < 1 )); do
             sleep 10
@@ -151,6 +131,7 @@ jobs:
         if: always()
         env:
           GH_TOKEN: ${{ github.token }}
+          CI_PAT: ${{ secrets.CI_PAT }}
           BRANCH: ${{ steps.branch.outputs.name }}
         run: |
           AUTH="authorization: Bearer $GH_TOKEN"
@@ -160,7 +141,7 @@ jobs:
             curl -Ls --header "$AUTH" --request POST "$GITHUB_API_URL/repos/$GITHUB_REPOSITORY/actions/runs/$run_id/cancel" > /dev/null
           done
           # Delete the branch. Tolerate it never having been created.
-          curl -Ls --header "$AUTH" --request DELETE "$GITHUB_API_URL/repos/$GITHUB_REPOSITORY/git/refs/heads/$BRANCH" > /dev/null
+          git push -d "https://x-access-token:$CI_PAT@${GITHUB_SERVER_URL#https://}/$GITHUB_REPOSITORY.git" "refs/heads/$BRANCH" || true
 
   finalize:
     name: Test CI of generated package (all)

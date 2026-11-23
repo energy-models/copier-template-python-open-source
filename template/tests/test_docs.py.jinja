@@ -1,0 +1,42 @@
+{#-
+SPDX-FileCopyrightText: 2026 copier-template-python-open-source contributors
+
+SPDX-License-Identifier: MIT
+-#}
+{#- REUSE-IgnoreStart -#}
+# SPDX-FileCopyrightText: {{ project_slug }} contributors
+#
+# SPDX-License-Identifier: {{ license }}
+{#- REUSE-IgnoreEnd #}
+
+"""The site's navigation, which the strict docs build does not check."""
+
+from __future__ import annotations
+
+from pathlib import Path
+from typing import TYPE_CHECKING
+
+import pytest
+
+if TYPE_CHECKING:
+    from collections.abc import Iterator
+
+ROOT = Path(__file__).resolve().parent.parent
+
+
+def _nav_pages(entries: list[dict]) -> Iterator[str]:
+    for entry in entries:
+        url = entry["url"]
+        if url and url.endswith(".md"):
+            yield url
+        yield from _nav_pages(entry["children"])
+
+
+def test_every_page_under_docs_has_a_nav_entry():
+    config = pytest.importorskip("zensical.config", reason="needs the docs feature")
+    nav = set(_nav_pages(config.parse_config(str(ROOT / "mkdocs.yml"))["nav"]))
+    pages = {path.relative_to(ROOT / "docs").as_posix() for path in (ROOT / "docs").rglob("*.md")}
+    assert pages == nav, (
+        f"pages with no nav entry in mkdocs.yml: {sorted(pages - nav)}; "
+        f"nav entries with no page: {sorted(nav - pages)}"
+    )

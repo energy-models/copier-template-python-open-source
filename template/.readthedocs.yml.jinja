@@ -13,9 +13,6 @@ SPDX-License-Identifier: MIT
 
 version: 2
 
-mkdocs:
-  configuration: mkdocs.yml
-
 build:
   os: ubuntu-24.04
   tools:
@@ -26,7 +23,8 @@ build:
       - asdf install pixi latest
       - asdf global pixi latest
     install:
-      - pixi install -e default -e doc --frozen
+      - pixi install -e default --frozen
     build:
       html:
-        - pixi run docs-build $READTHEDOCS_OUTPUT
+        - pixi run docs-build
+        - mkdir -p $READTHEDOCS_OUTPUT && cp -a .docs $READTHEDOCS_OUTPUT/html

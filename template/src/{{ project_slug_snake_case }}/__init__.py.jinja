@@ -14,6 +14,8 @@ SPDX-License-Identifier: MIT
 import warnings as _warnings
 from importlib import metadata as _metadata
 
+__all__ = ["__version__"]
+
 try:
     __version__ = _metadata.version(__name__)
 except _metadata.PackageNotFoundError as e:  # pragma: no cover

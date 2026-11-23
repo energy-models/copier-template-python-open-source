@@ -31,7 +31,6 @@ validation:
     unrecognized_links: warn
 
 theme:
-  name: material
   features:
     - navigation.tracking
     - navigation.tabs
@@ -73,16 +72,15 @@ markdown_extensions:
   - pymdownx.highlight:
       anchor_linenums: true
   - pymdownx.inlinehilite
-  - pymdownx.snippets
+  - pymdownx.snippets:
+      check_paths: true
   - pymdownx.superfences
   - pymdownx.details
   - pymdownx.tabbed:
       alternate_style: true
   - pymdownx.emoji:
-      emoji_index: !!python/name:material.extensions.emoji.twemoji
-      emoji_generator: !!python/name:material.extensions.emoji.to_svg
-hooks:
-  - docs/static/hooks.py
+      emoji_index: zensical.extensions.emoji.twemoji
+      emoji_generator: zensical.extensions.emoji.to_svg
 plugins:
   - search
   - autorefs
@@ -93,10 +91,7 @@ plugins:
             - https://docs.python.org/3/objects.inv
           paths: ["src"]
           options:
-            # numpydoc throughout: `Parameters`/`Notes` with underlines, never
-            # `Args:`. Docstrings cite the Design pages from `Notes`, which
-            # griffe renders as an admonition of plain Markdown.
-            docstring_style: numpy
+            docstring_style: google
             show_source: true
             show_root_heading: true
             show_root_full_path: false
@@ -115,7 +110,6 @@ watch:
   - README.md
   - CHANGELOG.md
   - CONTRIBUTING.md
-  - AGENTS.md
 
 extra:
   social:
@@ -133,7 +127,7 @@ nav:
   - Home: index.md
   - Installation: installation.md
   - Contributing: contributing.md
-  - Changelog: CHANGELOG.md
   - Reference:
       - reference/index.md
-      - AGENTS.md
+      - Python API: reference/api.md
+      - Changelog: reference/changelog.md

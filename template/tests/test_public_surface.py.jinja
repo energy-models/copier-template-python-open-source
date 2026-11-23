@@ -1,0 +1,35 @@
+{#-
+SPDX-FileCopyrightText: 2026 copier-template-python-open-source contributors
+
+SPDX-License-Identifier: MIT
+-#}
+{#- REUSE-IgnoreStart -#}
+# SPDX-FileCopyrightText: {{ project_slug }} contributors
+#
+# SPDX-License-Identifier: {{ license }}
+{#- REUSE-IgnoreEnd #}
+
+"""The export surface, pinned, because a consumer depends on it by name."""
+
+import {{ project_slug_snake_case }}
+
+SURFACE = frozenset({"__version__"})
+
+
+def test_all_matches_the_pinned_surface():
+    declared = set({{ project_slug_snake_case }}.__all__)
+    assert declared == SURFACE, (
+        f"only in __all__: {sorted(declared - SURFACE)}; "
+        f"only in SURFACE: {sorted(SURFACE - declared)}"
+    )
+
+
+def test_every_exported_name_is_bound():
+    missing = sorted(set({{ project_slug_snake_case }}.__all__) - set(vars({{ project_slug_snake_case }})))
+    assert not missing, f"__all__ names unbound attributes: {missing}"
+
+
+def test_the_version_comes_from_the_package_metadata():
+    assert {{ project_slug_snake_case }}.__version__ != "unknown", (
+        "the package is installed and reads its version from its metadata"
+    )

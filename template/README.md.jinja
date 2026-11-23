@@ -12,7 +12,7 @@ SPDX-License-Identifier: CC-BY-4.0
 -->
 {#- REUSE-IgnoreEnd #}
 
-<!--- --8<-- [start:docs] -->
+<!--- --8<-- [start:docs-preamble] -->
 
 # {{ project_slug }}
 
@@ -47,17 +47,41 @@ git clone {{ github_url }}
 cd {{ project_slug }}
 
 pixi run test    # the test suite
-pixi run lint    # ruff, prettier, taplo, typos, zizmor, reuse, mypy
+pixi run lint    # ruff, pyrefly, prettier, taplo, typos, zizmor, reuse
+pixi run ci      # every gate CI runs: lint, test and docs-build
 pixi run docs-serve    # serve this site locally
 ```
 
 <!--- --8<-- [end:docs-install-dev] -->
 
 See the [contributing guide](./contributing.md) for the workflow and conventions,
-and [`AGENTS.md`](./AGENTS.md) for how AI-assisted contributions must be marked.
+and [`AGENTS.md`]({{ github_url }}/blob/main/AGENTS.md) for how AI-assisted contributions must be marked.
 
 <!--- --8<-- [end:docs-postamble] -->
 
 ## Documentation
 
 For more detailed instructions, see our [documentation]({{ docs_url }}/latest).
+
+## Contributors
+
+Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/docs/en/emoji-key)):
+
+<!-- ALL-CONTRIBUTORS-LIST:START - Do not remove or modify this section -->
+<!-- prettier-ignore-start -->
+<!-- markdownlint-disable -->
+<table>
+  <tbody>
+    <tr>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/{{ github_user }}"><img src="https://github.com/{{ github_user }}.png?v=4?s=100" width="100px;" alt="{{ author_name }}"/><br /><sub><b>{{ author_name }}</b></sub></a><br /><a href="{{ github_url }}/commits?author={{ github_user }}" title="Code">💻</a> <a href="{{ github_url }}/commits?author={{ github_user }}" title="Documentation">📖</a> <a href="#ideas-{{ github_user }}" title="Ideas, Planning, & Feedback">🤔</a> <a href="#projectManagement-{{ github_user }}" title="Project Management">📆</a> <a href="#maintenance-{{ github_user }}" title="Maintenance">🚧</a></td>
+    </tr>
+  </tbody>
+</table>
+
+<!-- markdownlint-restore -->
+<!-- prettier-ignore-end -->
+
+<!-- ALL-CONTRIBUTORS-LIST:END -->
+
+This project follows the [all-contributors](https://github.com/all-contributors/all-contributors) specification.
+Contributions of any kind welcome!

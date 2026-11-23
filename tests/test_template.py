@@ -4,6 +4,7 @@
 # SPDX-License-Identifier: 0BSD
 # SPDX-License-Identifier: MIT
 
+import json
 import subprocess
 
 import pytest
@@ -13,13 +14,17 @@ def test_generation(generated_project, project_slug):
     assert (
         generated_project / "src" / project_slug.replace("-", "_") / "__init__.py"
     ).exists()
-    smoke_test = (generated_project / "tests" / "test_import.py").read_text()
-    assert f"import {project_slug.replace('-', '_')}\n" in smoke_test
+    surface_test = (generated_project / "tests" / "test_public_surface.py").read_text()
+    assert f"import {project_slug.replace('-', '_')}\n" in surface_test
     readme = (generated_project / "README.md").read_text()
     assert (
         f"https://img.shields.io/github/actions/workflow/status/energy-models/{project_slug}/ci.yml"
         in readme
     )
+    assert "<!-- ALL-CONTRIBUTORS-LIST:START" in readme
+    assert "<!-- ALL-CONTRIBUTORS-LIST:END -->" in readme
+    contributors = json.loads((generated_project / ".all-contributorsrc").read_text())
+    assert contributors["contributors"][0]["name"] == "Lando Calrissian"
 
     pyproject = (generated_project / "pyproject.toml").read_text()
     assert (
@@ -88,7 +93,7 @@ def test_minimal_python_version(generate_project, minimal_python_version: str):
         in pyproject_toml_content
     )
     assert (
-        f"[tool.mypy]\npython_version = '{minimal_python_version_str}'\nno_implicit"
+        f'[tool.pyrefly]\npython-version = "{minimal_python_version_str}"\n'
         in pyproject_toml_content
     )
 
@@ -117,3 +122,49 @@ def test_minimal_python_version(generate_project, minimal_python_version: str):
         else:
             assert env not in pixi_toml
             assert env not in ci
+
+
+@pytest.mark.parametrize("skill", ["prose-writing", "docs-writing"])
+def test_recopy_keeps_project_rules_and_replaces_shared_skill(generate_project, skill):
+    path = generate_project()
+    skill_dir = path / ".claude" / "skills" / skill
+    shared = (skill_dir / "SKILL.md").read_text()
+    (skill_dir / "project.md").write_text("project rules\n")
+    (skill_dir / "SKILL.md").write_text("local edit\n")
+
+    subprocess.check_call(
+        [
+            "copier",
+            "recopy",
+            "--overwrite",
+            "--defaults",
+            "--trust",
+            "--skip-tasks",
+            "--vcs-ref=HEAD",
+            path,
+        ]
+    )
+
+    assert (skill_dir / "project.md").read_text() == "project rules\n"
+    assert (skill_dir / "SKILL.md").read_text() == shared
+
+
+@pytest.mark.parametrize("stub", ["CHANGELOG.md", "docs/index.md", "tests/conftest.py"])
+def test_recopy_keeps_project_stubs(generate_project, stub):
+    path = generate_project()
+    (path / stub).write_text("project text\n")
+
+    subprocess.check_call(
+        [
+            "copier",
+            "recopy",
+            "--overwrite",
+            "--defaults",
+            "--trust",
+            "--skip-tasks",
+            "--vcs-ref=HEAD",
+            path,
+        ]
+    )
+
+    assert (path / stub).read_text() == "project text\n"

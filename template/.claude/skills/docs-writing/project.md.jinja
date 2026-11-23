@@ -1,0 +1,56 @@
+{#-
+SPDX-FileCopyrightText: 2026 copier-template-python-open-source contributors
+
+SPDX-License-Identifier: MIT
+-#}
+{#- REUSE-IgnoreStart -#}
+<!--
+SPDX-FileCopyrightText: {{ project_slug }} contributors
+SPDX-License-Identifier: CC-BY-4.0
+-->
+{#- REUSE-IgnoreEnd #}
+
+# Docs rules for {{ project_slug }}
+
+This file belongs to {{ project_slug }}, and `copier update` leaves it alone.
+[SKILL.md](SKILL.md) contains the shared rules, and where the two differ, this file wins.
+
+## Nav sections
+
+State what each nav section holds in {{ project_slug }}, one line per section, and which pages sit in the Development section.
+
+## The running example
+
+Name the data, the names and the calls that every example on a page reuses.
+
+## The home page
+
+State where `docs/index.md` departs from the layout in SKILL.md, and why.
+State what `docs/static/index-abstract.svg` draws: the input, what {{ project_slug }} does to it, the output, and the tools that read the output.
+Name the data from the running example that it uses.
+
+## Figure colours
+
+State what each colour means in a figure, and name the model figure once one exists.
+SKILL.md sets the vermilion hatch and the dashed outline.
+
+| Mark                        | Means |
+| --------------------------- | ----- |
+| blue `#0072B2` tint         |       |
+| orange `#E69F00` tint       |       |
+| bluish green `#009E73` tint |       |
+| reddish purple `#CC79A7`    |       |
+| sky blue `#56B4E9`          |       |
+| yellow `#F0E442`            |       |
+
+## Generated content
+
+List each block a tool writes into a page, with the tool that writes it and the test that checks it.
+
+## Extra mechanics
+
+List any rule for a page that SKILL.md does not cover, such as redirects or version placeholders.
+
+## Extra gates
+
+List any check to run on top of the gates in SKILL.md, and when it applies.

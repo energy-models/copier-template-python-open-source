@@ -7,6 +7,7 @@ import re
 import pytest
 
 from migrations.v1_1_0 import migrate
+from migrations.v1_1_0_license import migrate as migrate_license
 
 GUIDE = """<!---
 Changelog headings can be any of:
@@ -95,3 +96,18 @@ def test_a_changelog_the_release_tool_would_refuse_stops_the_update(
 ):
     with pytest.raises(ValueError, match=re.escape(message)):
         migrate(text, tags)
+
+
+@pytest.mark.parametrize(
+    ("old", "new"),
+    [
+        pytest.param("BSD", "BSD-3-Clause", id="bsd"),
+        pytest.param("GPL-v3", "GPL-3.0-or-later", id="gpl"),
+        pytest.param("MIT", "MIT", id="already-spdx"),
+    ],
+)
+def test_the_license_answer_becomes_an_spdx_identifier(old, new):
+    answers = f"_commit: v1.0.0\nlicense: {old}\nproject_slug: a\n"
+    assert migrate_license(answers) == (
+        f"_commit: v1.0.0\nlicense: {new}\nproject_slug: a\n"
+    ), "only the license line changes"

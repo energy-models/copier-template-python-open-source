@@ -85,12 +85,10 @@ def order(tag: str) -> tuple[int, ...] | None:
 def pending(text: str, tags: set[str]) -> str | None:
     """The version the changelog asks to release, or None when it asks for none.
 
-    Raises
-    ------
-    ChangelogError
-        If a heading above the first release is not ``Upcoming version``, if
-        there are two of those, or if the first release heading is new but its
-        version, date or section is not one this repository can release.
+    Raises:
+        ChangelogError: If a heading above the first release is not ``Upcoming version``, if
+            there are two of those, or if the first release heading is new but its
+            version, date or section is not one this repository can release.
     """
     upcoming = 0
     for section in sections(text):
@@ -145,10 +143,8 @@ def _new_release(version: str, day: str, section: Section, tags: set[str]) -> st
 def notes(text: str, version: str) -> str:
     """The section under the release heading of *version*, as the release notes.
 
-    Raises
-    ------
-    ChangelogError
-        If no release heading names *version*.
+    Raises:
+        ChangelogError: If no release heading names *version*.
     """
     for section in sections(text):
         release = RELEASE.fullmatch(section.heading)

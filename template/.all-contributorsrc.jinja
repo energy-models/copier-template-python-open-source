@@ -18,8 +18,8 @@ SPDX-License-Identifier: MIT
   "commitConvention": "none",
   "contributors": [
     {
-      "login": {{ github_user }},
-      "name": {{ author_name }},
+      "login": {{ github_user | tojson }},
+      "name": {{ author_name | tojson }},
       "avatar_url": "https://github.com/{{ github_user }}.png?v=4",
       "profile": "https://github.com/{{ github_user }}",
       "contributions": [

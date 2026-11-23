@@ -55,7 +55,7 @@ If you plan to make changes to the code then please make regular use of the foll
 ## Documentation
 
 With any contribution, you may need to update / add to the documentation (in the `docs` directory).
-We use [MkDocs](https://www.mkdocs.org/) and the [Material](https://squidfunk.github.io/mkdocs-material/) theme to build and render our documentation,
+We use [Zensical](https://zensical.org/) to build and render our documentation from the configuration in `mkdocs.yml`,
 meaning you can write your documentation in Markdown files.
 
 Here are some use-cases that you may come across in which you are considering updating the documentation:
@@ -63,13 +63,13 @@ Here are some use-cases that you may come across in which you are considering up
 ??? question "I have updated the README.md"
 
     We pipe sections of the README over to the documentation automatically.
-    If you put your changes between the commented lines `:::md <!--- --8<-- [start:docs] -->` and `:::md <!--- --8<-- [end:docs] -->`
+    If you put your changes between the commented lines `:::md <!--- --8<-- [start:docs-preamble] -->` and `:::md <!--- --8<-- [end:docs-postamble] -->`
     it will find its way to the documentation homepage.
 
 ??? question annotate "I want to add a new page"
 
     Add a Markdown file to the top-level in `docs`, e.g. `docs/my-page.md`.
-    Then, add a reference to that file within the `nav` key in `mkdocs.yml`, e.g.:
+    Then, add a reference to that file within the `nav` key in `mkdocs.yml`; `tests/test_docs.py` fails on a page with no nav entry, e.g.:
 
     ```yaml
     nav:
@@ -98,12 +98,12 @@ Here are some use-cases that you may come across in which you are considering up
 
 ??? question "I want to add images to my docs"
 
-    You should add any new images to the top-level `resources/` directory.
+    You should add any new images to the `docs/assets/` directory.
     Within your Markdown, you will be able to reference these as follows:
 
     ``` html
     <figure>
-    <img src="../resources/filename.png", width="100%", style="background-color:white;", alt="accessible alternative text">
+    <img src="../assets/filename.png", width="100%", style="background-color:white;", alt="accessible alternative text">
     <figcaption>My caption.</figcaption>
     </figure>
     ```
@@ -111,32 +111,26 @@ Here are some use-cases that you may come across in which you are considering up
     Or:
 
     ``` md
-    ![accessible alternative text](../resources/filename.png)
+    ![accessible alternative text](../assets/filename.png)
     ```
 
     The first approach gives you a bit more power, including having a figure caption.
 
 ??? question "I want to update the Python API docs"
 
-    As with example notebooks, we update these pages automatically.
-    So, if you've added content within your project (a new class, module, etc.), you will see them in your next iteration of the documentation.
-
-??? question "I want to automatically process a number of files into pages in the docs"
-
-    You may have configuration files you want to add to the documentation for reference.
-    You should add your workflow to process these files to `docs/hooks.py`.
-    In that file, you can find examples of how we do it for other files (e.g. the python API docs).
+    `docs/reference/api.md` renders the package's public names from their docstrings with a `::: {{ project_slug_snake_case }}` block.
+    Add a `:::` block for any module or name you want to document on its own.
 
 ??? question "I want to view my documentation changes locally"
 
     You can serve your documentation locally by calling `pixi run docs-serve` from the command line.
     Once the documentation has been built you will see a link to navigate to in your browser, most likely <http://127.0.0.1:8000>.
-    When you make changes to your documentation, `mkdocs` will automatically rebuild everything
+    When you make changes to your documentation, `zensical` will automatically rebuild everything
     so that you can check the effects of your changes without needing to rerun manually.
 
 ??? question "I want to do something else"
 
-    We recommend exploring the [MkDocs](https://www.mkdocs.org/) and the [Material](https://squidfunk.github.io/mkdocs-material/) documentation if we haven't answered your question.
+    We recommend exploring the [Zensical](https://zensical.org/docs/) documentation if we haven't answered your question.
 
 ## Updating the project when the template updates
 

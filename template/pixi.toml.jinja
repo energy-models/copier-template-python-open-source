@@ -18,6 +18,10 @@ exclude-newer = "7d"
 platforms = ["osx-arm64", "osx-64", "linux-64", "win-64"]
 preview = ["pixi-build"]
 
+[exclude-newer]
+# A new pixi backend API can leave only a days-old compatible backend.
+pixi-build-python = "0d"
+
 [package]
 name = "{{ project_slug }}"
 # pyproject.toml takes its version from the git tag, but pixi needs a literal
@@ -28,7 +32,7 @@ name = "pixi-build-python"
 version = "*"
 [package.host-dependencies]
 python = ">={{ minimal_python_version.replace('py3', '3.') }}"
-hatchling = "*"
+hatchling = ">=1.27"
 hatch-vcs = "*"
 uv = "*"
 
@@ -38,14 +42,14 @@ uv = "*"
 [feature.test.dependencies]
 pytest = "*"
 pytest-cov = "*"
-mypy = "*"
+pytest-xdist = "*"
 [feature.test.tasks]
-test = "pytest"
+test = "pytest -n auto"
 test-coverage = "pytest --cov={{ project_slug_snake_case }} --cov-report=xml --cov-report=term-missing"
 
 [feature.build.dependencies]
 python = "*"
-hatchling = "*"
+hatchling = ">=1.27"
 hatch-vcs = "*"
 python-build = "*"
 twine = ">=6"
@@ -55,7 +59,8 @@ check-wheel = "twine check dist/*"
 
 [feature.lint.dependencies]
 lefthook = "*"
-ruff = "*"
+ruff = "==0.16.1"
+pyrefly = "==1.2.0"
 prettier = "*"
 taplo = "*"
 pre-commit-hooks = "*"
@@ -65,35 +70,23 @@ reuse = "*"
 [feature.lint.tasks]
 pre-commit-install = "lefthook install"
 lint = "lefthook run pre-commit --all-files"
+typecheck = "pyrefly check"
 
-# Pinned below 2.0 deliberately. MkDocs 2.0 drops the plugin system, rewrites
-# theming and switches config to TOML with no migration path - it would take
-# mkdocstrings, and so the whole API Reference, with it. Material's own advice
-# is to pin `<2`; the successor they point at, Zensical, still calls its
-# mkdocstrings integration preliminary, so this stays here until that settles.
 [feature.docs.dependencies]
-mkdocs = ">=1.6,<2"
-mkdocs-material = ">=9.5"
+zensical = "==0.0.63"
 mkdocstrings = ">=0.29"
 mkdocstrings-python = ">=1.16"
-mkdocs-bibtex = ">=2.16"
 pymdown-extensions = ">=10.0"
-mkdocs-macros-plugin = ">=1.0"
-mkdocs-table-reader-plugin = ">=3.1"
 # mkdocstrings formats signatures with one of these; without it every signature
 # renders on a single unwrapped line.
 ruff = "*"
 [feature.docs.tasks.docs-serve]
-cmd = "mkdocs serve"
+cmd = "python -m zensical serve"
 [feature.docs.tasks.docs-build]
-cmd = "mkdocs build --strict {{ dir }}"
-args = ["dir"]
+cmd = "python -m zensical build --strict"
 
-# Material prints a red MkDocs 2.0 advisory on every build. It is editorial, not
-# a deprecation of anything used here, and in a CI log it reads as a failure -
-# which matters because `--strict` means a real problem is also red.
-[feature.docs.activation.env]
-NO_MKDOCS_2_WARNING = "1"
+[tasks.ci]
+depends-on = ["lint", "test", "docs-build"]
 
 [feature.template.dependencies]
 copier = ">=9.16"

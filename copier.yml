@@ -8,6 +8,12 @@
 _subdirectory: template
 _preserve_symlinks: True
 _min_copier_version: "9.3.1"
+_skip_if_exists:
+  - .claude/skills/prose-writing/project.md
+  - .claude/skills/docs-writing/project.md
+  - CHANGELOG.md
+  - docs/index.md
+  - tests/conftest.py
 
 # questions
 project_slug:
@@ -72,11 +78,11 @@ license:
     "MIT license":
       value: MIT
     "BSD license":
-      value: BSD
+      value: BSD-3-Clause
     "Apache Software License 2.0":
       value: Apache-2.0
     "GNU General Public License v3":
-      value: GPL-v3
+      value: GPL-3.0-or-later
 
 use_devcontainer:
   type: bool
@@ -94,8 +100,13 @@ _migrations:
     command:
       - "{{ _copier_python }}"
       - "{{ _copier_conf.src_path }}/migrations/v1_1_0.py"
+  - version: v1.1.0
+    when: "{{ _stage == 'before' }}"
+    command:
+      - "{{ _copier_python }}"
+      - "{{ _copier_conf.src_path }}/migrations/v1_1_0_license.py"
 
 _tasks:
   - "pixi exec --spec git git init"
-  - "pixi run reuse download --all"
+  - "pixi exec --spec reuse reuse download --all"
   - "pixi run pre-commit-install"

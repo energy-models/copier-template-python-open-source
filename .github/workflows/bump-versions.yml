@@ -18,7 +18,7 @@ jobs:
     name: Update ${{ matrix.name }}
     runs-on: ubuntu-latest
     permissions:
-      # `create-pull-request` pushes and opens the pull request with `CI_PAT`.
+      # `create-pull-request` pushes and opens the pull request with the app token.
       contents: read
       # Open an issue when the update fails.
       issues: write
@@ -40,6 +40,14 @@ jobs:
         run: python -m scripts.${{ matrix.script }}
         env:
           GH_TOKEN: ${{ github.token }}
+      - name: Create the app token
+        id: app
+        uses: actions/create-github-app-token@64ab729a6294000f5aa4a4bc0b73d1f32bc45510 # v3.3.0
+        with:
+          client-id: ${{ vars.BOT_CLIENT_ID }}
+          private-key: ${{ secrets.BOT_PRIVATE_KEY }}
+          permission-contents: write
+          permission-pull-requests: write
       - uses: peter-evans/create-pull-request@5f6978faf089d4d20b00c7766989d076bb2fc7f1 # v8.1.1
         with:
           commit-message: "build: auto-update ${{ matrix.name }}"
@@ -50,9 +58,9 @@ jobs:
           branch: update-${{ matrix.name }}
           delete-branch: true
           # A pull request opened with `GITHUB_TOKEN` starts no workflow, so it
-          # would get no checks. `CI_PAT` is a fine-grained token limited to
-          # this repository.
-          token: ${{ secrets.CI_PAT }}
+          # would get no checks. The `energy-models-bot` app token starts them
+          # and expires after one hour.
+          token: ${{ steps.app.outputs.token }}
       - name: Create issue on failure
         if: failure()
         uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
